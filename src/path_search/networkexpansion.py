@@ -4,6 +4,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 #import matplotlib.pyplot as plt
+from config import project_config
 
 class NetworkExpansion():
 
@@ -131,7 +132,7 @@ class NetworkExpansion():
             outfile.write("{},'{}','{}',{},{},'{}'\n".format(node, name, labvisib, patents, patents, self.data.colorpalette[dict_comp_gen[node]]))
 
         df = pd.DataFrame(listDF)
-        df.to_csv('../output/'+self.data.projectname+'/compound_derivatives.csv', index = False)
+        df.to_csv(project_config.OUTPUT_DIR / self.data.projectname/'compound_derivatives.csv', index = False)
         #processing edges of the subgraph
         outfile.write("edgedef>node1 VARCHAR,node2 VARCHAR,directed BOOLEAN, color VARCHAR, weight DOUBLE\n")
 

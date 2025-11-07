@@ -37,8 +37,8 @@ weight_PL|0.25
 weight_KR|0.25
 
 # Source compound inchikey
-# example : tyrosine
-source|OUYCCCASQSFEME
+# example : phenylalanine
+source|COLNVLDHVKWLRT
 
 # Use list of inchikeys of source compounds
 # the list of source compounds is in the parameters/source_compounds.txt
@@ -46,8 +46,8 @@ source|OUYCCCASQSFEME
 use_source_compounds_list|no
 
 # Target compound inchikey
-# example : scoulerine
-target|KNWVMRVOBAFFMH
+# example : benzenecarboperoxoic acid
+target|XCRBXWCUXJNEFX
 
 # Number of the shortest pathways for each precursor compound
 # Default 10
@@ -75,5 +75,6 @@ top_pathways_to_draw|1
 # II:
 # Network expansion
 # store your compound LCSB IDs for the pathway you want to expand in the /parameters/path_compounds.txt file
+pathname|basicAromaticAminoAcidBiosynthesis
 generations_expansion|4
 num_top_patented_compounds_select|15

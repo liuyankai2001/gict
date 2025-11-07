@@ -1,5 +1,5 @@
 __author__ = 'anastasia'
-
+from config import project_config
 import pandas as pd
 from rdkit import Chem
 import json
@@ -8,8 +8,8 @@ import os
 class Balance():
     def __init__(self):
 
-        self.df_compounds = pd.read_csv('../data/compounds.csv')
-        self.df_reactions = pd.read_csv('../data/reactions.csv')
+        self.df_compounds = pd.read_csv(project_config.DATA_DIR / 'compounds.csv')
+        self.df_reactions = pd.read_csv(project_config.DATA_DIR / 'reactions.csv')
 
         self.get_compounds_atoms_dict() # load the dictionary with count of atom types per compound
 
@@ -39,8 +39,8 @@ class Balance():
         :return:
         """
 
-        if os.path.exists('../data/compound_atoms.json') :
-            with open('../data/compound_atoms.json') as f:
+        if os.path.exists(project_config.DATA_DIR / 'compound_atoms.json') :
+            with open(project_config.DATA_DIR / 'compound_atoms.json') as f:
                 compound_atoms = json.load(f)
                 self.compound_atoms = self.convert_keys_to_int(compound_atoms)
             return
@@ -56,7 +56,7 @@ class Balance():
                 print(row['cUID'], row['COMMON_NAME'], row['SMILES'])
             compound_atoms[row['cUID']] = molecule_atoms_dict
 
-        with open('../data/compound_atoms.json', 'w') as f:
+        with open(project_config.DATA_DIR / 'compound_atoms.json', 'w') as f:
             json.dump(compound_atoms, f)
 
         self.compound_atoms = compound_atoms
@@ -178,7 +178,7 @@ class Balance():
             listDF.append(dict_rxn)
 
         f_out = pd.DataFrame(listDF, dtype='int')
-        f_out.to_csv('../data/reaction_balance.csv', index=False)
+        f_out.to_csv(project_config.DATA_DIR / 'reaction_balance.csv', index=False)
 
         print('count_unstructured', count_unstructured)
         print('count_unbalanced', count_unbalanced)

@@ -57,13 +57,13 @@ class Visualization():
     def print_png_from_smiles(self, smiles, refV):
         mol = AllChem.MolFromSmiles(smiles)
         AllChem.Compute2DCoords(mol)
-        Draw.MolToFile(mol,self.pw_img_folder+"/%s.png"%refV,size=(200,250))
+        Draw.MolToFile(mol,str(self.pw_img_folder / "%s.png")%refV,size=(200,250))
 
 
     def print_png_from_molfile(self, comp_id, molfile_folder):
         mol = AllChem.MolFromMolFile(molfile_folder + comp_id+'.mol')
         AllChem.Compute2DCoords(mol)
-        Draw.MolToFile(mol,self.pw_img_folder+"/%s.png"%comp_id,size=(200,250))
+        Draw.MolToFile(mol,str(self.pw_img_folder / "%s.png")%comp_id,size=(200,250))
 
 
     # drawing the combined overview of the pathway
@@ -76,7 +76,7 @@ class Visualization():
             self.addPathwayGraphToImage(index)
 
     def combine_images_for_one_pathway(self, pathway_id, intermediates):
-        compound_images_pathway = [self.pw_img_folder+'/' + str(refV) +'.png' for refV in intermediates]
+        compound_images_pathway = [self.pw_img_folder / str(str(refV) +'.png') for refV in intermediates]
 
         images = [Image.open(x) for x in compound_images_pathway]
         widths, heights = zip(*(i.size for i in images))
@@ -91,7 +91,7 @@ class Visualization():
             new_im.paste(im, (x_offset,0))
             x_offset += im.size[0]
 
-        new_im.save(self.pw_img_folder+'/pathway_{}.jpg'.format(pathway_id))
+        new_im.save(str(self.pw_img_folder / 'pathway_{}.jpg').format(pathway_id))
 
     def drawPathwayGraph(self, row):
         G=nx.Graph()
@@ -134,12 +134,12 @@ class Visualization():
         #fig.patch.set_visible(False)
         ax.axis('off')
 
-        fig.savefig(self.pw_img_folder+'/graph_path_temp.png', bbox_inches='tight', pad_inches=0)
+        fig.savefig(self.pw_img_folder/'graph_path_temp.png', bbox_inches='tight', pad_inches=0)
 
     def addPathwayGraphToImage(self, pathway_id):
 
-        imgage_pw_file = self.pw_img_folder+'/pathway_{}.jpg'.format(pathway_id)
-        image_graph_file = self.pw_img_folder+'/graph_path_temp.png'
+        imgage_pw_file = str(self.pw_img_folder /'pathway_{}.jpg').format(pathway_id)
+        image_graph_file = self.pw_img_folder / 'graph_path_temp.png'
 
         image_pw = Image.open(imgage_pw_file)
 
@@ -166,7 +166,7 @@ class Visualization():
             new_im.paste(im, (0,y_offset))
             y_offset += im.size[1]
 
-        new_im.save(self.pw_img_folder+'/pathway_with_graph_{}.jpg'.format(pathway_id))
+        new_im.save(str(self.pw_img_folder / 'pathway_with_graph_{}.jpg').format(pathway_id))
 
-        os.remove(self.pw_img_folder+'/graph_path_temp.png')
-        os.remove(self.pw_img_folder+'/pathway_{}.jpg'.format(pathway_id))
+        os.remove(self.pw_img_folder/'graph_path_temp.png')
+        os.remove(self.pw_img_folder/str('pathway_{}.jpg'.format(pathway_id)))
