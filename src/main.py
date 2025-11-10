@@ -6,14 +6,11 @@ from langchain_openai import ChatOpenAI
 from langchain_core.messages import SystemMessage, HumanMessage
 from config import project_config
 from path_search.get_path_search import get_path_search
+from src.enzymatic_conversion.enzymatic_conversion import get_enzymatic_conversion_CDS
 from utils.utils import get_english_name, get_inchikey_by_name, get_enzymes_list, parse_user_input, \
     generage_project_file
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
-
-
-
-
 
 
 
@@ -28,7 +25,7 @@ def main():
     generage_project_file(precursor_compound,target_compound)
 
     pathways_result_path = project_config.OUTPUT_DIR / str(precursor_compound+'_to_'+target_compound) / 'pathways.csv'
-
+    pathways_result_path = project_config.OUTPUT_DIR / 'benzenecarboperoxic_acid'/'pathways.csv'
     # print(precursor_compound)
     # print(target_compound)
     # print(pathways_result_path)
@@ -41,7 +38,9 @@ def main():
     pathway_enzymes = df.loc[0,'pathway_enzymes']
     print(pathway_enzymes)
     enzymes = get_enzymes_list(pathway_enzymes)
-    print(enzymes)
+    # 构建基因表达盒
+    cassettes = get_enzymatic_conversion_CDS(enzymes, 'ecoli', promoter_strength='strong')
+
 
 if __name__ == '__main__':
     main()

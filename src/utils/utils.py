@@ -62,6 +62,7 @@ def get_enzymes_list(str:str):
     return enzymes
 
 def generage_project_file(precursor_compound,target_compound):
+    # 案例
     precursor_compound_inchikey = 'COLNVLDHVKWLRT'
     target_compound_inchikey = 'XCRBXWCUXJNEFX'
 
