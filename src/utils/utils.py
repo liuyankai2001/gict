@@ -6,11 +6,12 @@ import dotenv
 
 from langchain_openai import ChatOpenAI
 
-from config import project_config
+# from config import project_config
 
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 
+from src.config import project_config
 
 dotenv.load_dotenv(dotenv_path=project_config.ROOT_DIR / '.env')
 os.environ["OPENAI_API_KEY"] = os.getenv("OPENAI_API_KEY")
@@ -19,6 +20,7 @@ os.environ["OPENAI_API_BASE"] = os.getenv("OPENAI_BASE_URL")
 class Compound_Info(BaseModel):
     precursor_compound:str = Field(default='前体化合物')
     target_compound:str = Field(default='目标化合物')
+    host_cell:str = Field(default='None')
 
 demo_dict = {
     '苯丙氨酸':'phenylalanine',
@@ -32,7 +34,7 @@ def parse_user_input(user_input:str)-> dict:
     parser = JsonOutputParser(pydantic_object=Compound_Info)
     prompt = ChatPromptTemplate.from_messages([
         ('system',
-         '你是一个合成生物学家，主要任务是根据用户输入，你只需提取用户提到的前体化合物和目标化合物,并将其转化为英文即可，其他不需要做,并且返回的格式应该是{format_instructions}'),
+         '你是一个合成生物学家，主要任务是根据用户输入，你只需提取用户提到的宿主细胞,前体化合物和目标化合物,并将其转化为英文即可，其他不需要做。另外，如果用户输入的宿主细胞是大肠杆菌，那么就将其翻译为‘ecoli’，如果是酵母，就将其翻译为‘yeast’{format_instructions}'),
         ('human', '{user_input}')
     ])
     chain = prompt | model | parser  # 使用 LangChain 链式调用
@@ -62,6 +64,7 @@ def get_enzymes_list(str:str):
     return enzymes
 
 def generage_project_file(precursor_compound,target_compound):
+    # 案例
     precursor_compound_inchikey = 'COLNVLDHVKWLRT'
     target_compound_inchikey = 'XCRBXWCUXJNEFX'
 
