@@ -15,6 +15,10 @@ from langchain_core.prompts import ChatPromptTemplate
 
 
 
+
+
+
+
 def main():
     user_input = "我想要在大肠杆菌中以苯丙氨酸为前体化合物合成过氧化苯甲酰，请你给出一段完整的质粒基因序列"
     if user_input is None:
