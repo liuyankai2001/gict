@@ -9,57 +9,118 @@ from src.enzymatic_conversion.codon_usage import ecoli_codon_usage, yeast_coden_
 # 设置邮箱
 Entrez.email = "283293400@qq.com"  # 替换为您的邮箱
 
-def search_enzyme_CDS(ec_num):
+# def search_enzyme_CDS(ec_num):
+#
+#     search_term = f"{ec_num}[EC] AND bacteria[ORGN]"  # 可修改为"Pseudomonas[ORGN]"等特定
+#     handle = Entrez.esearch(db="protein", term=search_term, retmax=10)
+#     record = Entrez.read(handle)
+#     protein_ids = record["IdList"]
+#     handle.close()
+#     print(f"找到 {len(protein_ids)} 个蛋白ID: {protein_ids}")
+#     if not protein_ids:
+#         raise ValueError("No protein found for the search term.")
+#
+#
+#     for prot_id in protein_ids:
+#         print(f"\n处理蛋白ID: {prot_id}")
+#
+#         # 步骤2: 链接到核苷酸ID
+#         link_handle = Entrez.elink(dbfrom="protein", db="nuccore", id=prot_id, linkname="protein_nuccore")
+#         link_record = Entrez.read(link_handle)
+#         link_handle.close()
+#
+#         nuc_ids = []
+#         if link_record and link_record[0]["LinkSetDb"]:
+#             for link_set in link_record[0]["LinkSetDb"]:
+#                 if link_set["DbTo"] == "nuccore":
+#                     nuc_ids = [link["Id"] for link in link_set["Link"]]
+#
+#         print(f"相关核苷酸ID: {nuc_ids}")
+#
+#         if nuc_ids:
+#             nuc_id = nuc_ids[0]  # 取第一个
+#
+#             # 步骤3: 获取GenBank记录
+#             fetch_handle = Entrez.efetch(db="nuccore", id=nuc_id, rettype="gb", retmode="text")
+#             gb_record = SeqIO.read(fetch_handle, "genbank")
+#             fetch_handle.close()
+#
+#             # 提取CDS和蛋白序列
+#             cds_seq = None
+#             protein_seq = None
+#             for feature in gb_record.features:
+#                 if feature.type == "CDS" and 'translation' in feature.qualifiers:
+#                     cds_seq = feature.location.extract(gb_record.seq) # 提取的CDS
+#                     protein_seq = Seq(feature.qualifiers['translation'][0]) # 对应的蛋白质序列
+#                     break
+#
+#             if cds_seq is None or protein_seq is None:
+#                 continue
+#
+#             if cds_seq and protein_seq:
+#                 print(f"原始CDS: {cds_seq}")
+#                 print(f"蛋白序列: {protein_seq}")
+#             return cds_seq
 
-    search_term = f"{ec_num}[EC] AND bacteria[ORGN]"  # 可修改为"Pseudomonas[ORGN]"等特定
-    handle = Entrez.esearch(db="protein", term=search_term, retmax=10)
+
+def search_enzyme_CDS(ec_num: str, erro_ec,retmax: int = 20):
+    """
+    根据EC号在细菌中搜索蛋白，返回第一个能成功获取到CDS核苷酸序列的序列。
+    如果全部都拿不到，返回 None。
+    """
+    # search_term = f"{ec_num}[ECNO] AND bacteria[ORGN]"
+    # 如果你只想要RefSeq（更可靠），可以改成：
+    search_term = f"{ec_num}[ECNO] AND bacteria[ORGN]"
+    handle = Entrez.esearch(db="protein", term=search_term, retmax=retmax, sort="relevance")
     record = Entrez.read(handle)
-    protein_ids = record["IdList"]
     handle.close()
-    print(f"找到 {len(protein_ids)} 个蛋白ID: {protein_ids}")
+    protein_ids = record["IdList"]
+
+    if len(protein_ids) == 0:
+        search_term = f"{ec_num}[ECNO]"
+        handle = Entrez.esearch(db="protein", term=search_term, retmax=retmax, sort="relevance")
+        record = Entrez.read(handle)
+        handle.close()
+        protein_ids = record["IdList"]
+
+
+
+
+
+    print(f"找到 {len(protein_ids)} 个蛋白ID: {protein_ids}",end='')
+
     if not protein_ids:
+        erro_ec.append(ec_num)
         raise ValueError("No protein found for the search term.")
 
-    found = False
-
     for prot_id in protein_ids:
-        print(f"\n处理蛋白ID: {prot_id}")
+        print(f"\n正在尝试蛋白ID: {prot_id}")
 
-        # 步骤2: 链接到核苷酸ID
-        link_handle = Entrez.elink(dbfrom="protein", db="nuccore", id=prot_id, linkname="protein_nuccore")
-        link_record = Entrez.read(link_handle)
-        link_handle.close()
+        try:
+            # 直接取该蛋白精确的CDS核苷酸序列
+            fetch_handle = Entrez.efetch(
+                db="protein",
+                id=prot_id,
+                rettype="fasta_cds_na",   # 关键！直接给CDS核苷酸序列
+                retmode="text"
+            )
 
-        nuc_ids = []
-        if link_record and link_record[0]["LinkSetDb"]:
-            for link_set in link_record[0]["LinkSetDb"]:
-                if link_set["DbTo"] == "nuccore":
-                    nuc_ids = [link["Id"] for link in link_set["Link"]]
-
-        print(f"相关核苷酸ID: {nuc_ids}")
-
-        if nuc_ids:
-            nuc_id = nuc_ids[0]  # 取第一个
-
-            # 步骤3: 获取GenBank记录
-            fetch_handle = Entrez.efetch(db="nuccore", id=nuc_id, rettype="gb", retmode="text")
-            gb_record = SeqIO.read(fetch_handle, "genbank")
+            # 使用 parse 而不是 read，防止空返回时出错
+            records = list(SeqIO.parse(fetch_handle, "fasta"))
             fetch_handle.close()
 
-            # 提取CDS和蛋白序列
-            cds_seq = None
-            protein_seq = None
-            for feature in gb_record.features:
-                if feature.type == "CDS" and 'translation' in feature.qualifiers:
-                    cds_seq = feature.location.extract(gb_record.seq) # 提取的CDS
-                    protein_seq = Seq(feature.qualifiers['translation'][0]) # 对应的蛋白质序列
-                    break
+            if records:  # 有记录说明成功拿到CDS
+                cds_seq = records[0].seq   # 细菌几乎都是单CDS
+                print(f"成功！蛋白 {prot_id} 拿到CDS序列，长度 {len(cds_seq)} bp")
+                print(f"CDS序列:\n{cds_seq}")
+                return cds_seq
+            else:
+                print(f"蛋白 {prot_id} 没有可用的CDS核苷酸序列，尝试下一个...")
 
-            if cds_seq and protein_seq:
-                print(f"原始CDS: {cds_seq}")
-                print(f"蛋白序列: {protein_seq}")
-            return cds_seq
+        except Exception as e:
+            print(f"蛋白 {prot_id} 请求失败 ({e})，尝试下一个...")
 
+    raise ValueError('所有蛋白都拿不到有效的CDS序列')
 
 def optimize_the_CDS(cds,host_cell):
     """
@@ -136,17 +197,23 @@ def build_expression_cassette(optimized_cdss, host_cell, promoter_strength, co_e
             cassettes.append(cassette)
         return cassettes
 
-def get_enzymatic_conversion_CDS(enzymes:list[str],host_cell,optimize=False,promoter_strength='strong'):
+def get_enzymatic_conversion_CDS(enzymes:list[str],host_cell,erro_ec,ec_dict:dict,optimize=False,promoter_strength='strong'):
     origin_cdses = []
     optimize_cds = []
     for enzyme in enzymes:
-        ec_cds = search_enzyme_CDS(enzyme)
+        print(f"========== 处理酶{enzyme}中... ==========")
+        if ec_dict.get(enzyme):
+            print(f"{enzyme}已存在于查询字典中")
+            ec_cds = ec_dict.get(enzyme)
+        else:
+            ec_cds = search_enzyme_CDS(enzyme,erro_ec)
+            ec_dict[enzyme] = ec_cds
         origin_cdses.append(ec_cds)
 
     if optimize:
         for ec_cds in origin_cdses:
-            optimize_cds = optimize_the_CDS(ec_cds,host_cell)
-            optimize_cds.append(optimize_cds)
+            opt_cds = optimize_the_CDS(ec_cds,host_cell)
+            optimize_cds.append(opt_cds)
     else:
         optimize_cds = origin_cdses
     cassettes = build_expression_cassette(optimize_cds,host_cell,promoter_strength)
@@ -161,6 +228,6 @@ def get_enzymatic_conversion_CDS(enzymes:list[str],host_cell,optimize=False,prom
     return cassettes
 
 if __name__ == '__main__':
-    enzymes = ['4.3.1.23', '2.8.3.17', '4.1.2.26', '1.2.1.30']
+    enzymes = ['1.2.3.9', '2.8.3.17']
     cassettes = get_enzymatic_conversion_CDS(enzymes,'ecoli',promoter_strength='strong')
     print(cassettes)
