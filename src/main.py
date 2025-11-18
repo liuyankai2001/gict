@@ -15,28 +15,28 @@ from src.enzymatic_conversion.enzymatic_conversion import get_enzymatic_conversi
 from utils.utils import get_enzymes_list, generage_project_file, find_ecs_path, is_complete_ec
 from utils.langchain_utils import parse_user_input
 
-from test_class import Test
-test_input = Test()
-host_cell = test_input.host_cell
-precursor_compound_name = test_input.precursor_compound_name
-precursor_compound_inchikey = test_input.precursor_compound_inchikey
-target_compound_name = test_input.target_compound_name
-target_compound_inchikey = test_input.target_compound_inchikey
+# from test_class import Test
+# test_input = Test()
+# host_cell = test_input.host_cell
+# precursor_compound_name = test_input.precursor_compound_name
+# precursor_compound_inchikey = test_input.precursor_compound_inchikey
+# target_compound_name = test_input.target_compound_name
+# target_compound_inchikey = test_input.target_compound_inchikey
 
 def main():
     # 用户读入
-    # user_input = "我想要在大肠杆菌中以苯丙氨酸为前体化合物合成过氧化苯甲酰，请你给出一段完整的质粒基因序列"
-    # if user_input is None:
-    #     user_input = input("请输入您的需求，如：我想要在大肠杆菌中以苯丙氨酸为前体化合物合成苯甲过氧酸，请你给出一段完整的质粒基因序列")
-    #
-    # # 提取用户需求信息
-    # input_dict = parse_user_input(user_input)
-    #
-    # host_cell = input_dict['host_cell'].lower().replace(' ', '_')
-    # precursor_compound_name = input_dict['precursor_compound_name'].lower().replace(' ', '_')
-    # target_compound_name = input_dict['target_compound_name'].lower().replace(' ', '_')
-    # precursor_compound_inchikey = input_dict['precursor_compound_inchikey']
-    # target_compound_inchikey = input_dict['target_compound_inchikey']
+    user_input = "我想要在大肠杆菌中以苯丙氨酸为前体化合物合成苯甲过氧酸，请你给出一段完整的质粒基因序列"
+    if user_input is None:
+        user_input = input("请输入您的需求，如：我想要在大肠杆菌中以苯丙氨酸为前体化合物合成苯甲过氧酸，请你给出一段完整的质粒基因序列")
+
+    # 提取用户需求信息
+    input_dict = parse_user_input(user_input)
+
+    host_cell = input_dict['host_cell'].lower().replace(' ', '_')
+    precursor_compound_name = input_dict['precursor_compound_name'].lower().replace(' ', '_')
+    target_compound_name = input_dict['target_compound_name'].lower().replace(' ', '_')
+    precursor_compound_inchikey = input_dict['precursor_compound_inchikey']
+    target_compound_inchikey = input_dict['target_compound_inchikey']
     # 生成配置文件
     generage_project_file(precursor_compound_name,precursor_compound_inchikey,target_compound_name,target_compound_inchikey)
 
@@ -76,6 +76,7 @@ def main():
                 continue
             print("开始尝试构建表达盒")
             try:
+                # 构建基因表达盒
                 cassettes = get_enzymatic_conversion_CDS(enzymes, host_cell, erro_ec,ec_dict,promoter_strength='strong')
             except ValueError as e:
                 print(f"出现错误，{e}")

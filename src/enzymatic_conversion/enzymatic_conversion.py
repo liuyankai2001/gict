@@ -83,10 +83,6 @@ def search_enzyme_CDS(ec_num: str, erro_ec,retmax: int = 20):
         handle.close()
         protein_ids = record["IdList"]
 
-
-
-
-
     print(f"找到 {len(protein_ids)} 个蛋白ID: {protein_ids}",end='')
 
     if not protein_ids:
@@ -184,6 +180,7 @@ def build_expression_cassette(optimized_cdss, host_cell, promoter_strength, co_e
 
     if co_expression:
         # 共表达: 共享promoter和terminator，每个CDS前加RBS
+        # 启动子 + rbs + cds1 + rbs + cds2 + rbs +...+ rbs + cdsn + 终止子
         cassette = promoter
         for cds in optimized_cdss:
             cassette += rbs + cds
